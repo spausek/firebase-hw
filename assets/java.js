@@ -13,14 +13,12 @@
 
   $('#add-train').on('click', function(event){
     event.preventDefault();
-    var trainName = $('#train-name').val().trim();
+
+     var trainName = $('#train-name').val().trim();
     var destination = $('#destination').val().trim();
-    var trainTime = moment($('#train-time').val().trim(),'HH:mm').format('x');
+    var trainTime = moment($('#train-time').val().trim(),'HH:mm').subtract(10, 'years').format('X');
     var frequency = $('#frequency').val().trim();
-    //console.log(trainName);
-    //console.log(destination);
-    //console.log(trainTime);
-    //console.log(frequency);
+    
 
     var newTrain = {
       name: trainName,
@@ -30,6 +28,11 @@
 
 
     };
+
+    if (trainName === '' || destination === '' || trainTime === '' || frequency === ''){
+    alert('Please fill in all inputs')
+      return false;
+    }
 
     database.ref().push(newTrain);
 
@@ -49,8 +52,8 @@
   database.ref().on('child_added', function(childSnapshot, prevChildKey) {
     console.log(childSnapshot.val());
 
-    //var addData = childSnapshot.val();
-    var trainName = childSnapshot.val().name;
+    var addData = childSnapshot.val();
+    var trainName = addData.name;
     var destination = addData.destination;
     var trainTime = addData.time;
     var frequency = addData.frequency;
@@ -59,5 +62,14 @@
     console.log(destination);
     console.log(trainTime);
     console.log(frequency);
+
+    var timeDifference = moment().diff(moment.unix(trainTime), 'minutes');
+    console.log(timeDifference);
+    var  timeRemainder = moment().diff(moment.unix(trainTime), 'minutes') % frequency;
+    var minutesRemaining = frequency - timeRemainder;
+    var nextTrainArrivalTime = moment().add(minutesRemaining, 'm').format('hh:mm A');
+    console.log(nextTrainArrivalTime);
+
+    $('#train-table').append('<tr><td>' + trainName + '</td><td>' + destination + '</td><td>' + frequency + '</td><td>' + nextTrainArrivalTime  + '</td><td>' + minutesRemaining + '</td></tr>');
 
   });
